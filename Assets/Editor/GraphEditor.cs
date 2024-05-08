@@ -25,6 +25,7 @@ public class GraphEditor : Editor
         VisualElement inspector = new VisualElement();
         InspectorElement.FillDefaultInspector(inspector, serializedObject, this);
         AddIntLabel(inspector, serializedObject.FindProperty("inspectStep"), "Step");
+        AddFloatLabel(inspector, serializedObject.FindProperty("inspectTime"), "Time");
         AddFloatLabel(inspector, serializedObject.FindProperty("inspectDistance"), "Distance");
         AddFloatLabel(inspector, serializedObject.FindProperty("inspectVelocity"), "Velocity");
         AddFloatLabel(inspector, serializedObject.FindProperty("inspectInput"), "Input");

@@ -29,7 +29,7 @@ public class Graph : MonoBehaviour
     public Positioning positioning;
     [Range(0.001f, 1)] public float width = 0.05f;
     [Range(0.001f, 5)] public float smoothTime = 1f;
-    [Range(1f, 20f)] public float speed = 1f;
+    [Range(0.5f, 100f)] public float speed = 1f;
     [Range(0.01f, 0.05f)] public float deltaTime = 0.03333f;
     [Range(1, 10)] public float time = 1f;
     [Range(0f, 2f)] public float positive = 1f;
@@ -37,7 +37,8 @@ public class Graph : MonoBehaviour
     [Range(0f, 2f)] public float neutral = 1f;
     [Range(1f, 10f)] public float inputChangeVelocity = 3f;
     [Range(0f, 1f)] public float inspect = 0f;
-    [Range(1f, 10f)] public float maxSpeed = 3f;
+    [Range(1f, 20f)] public float maxSpeed = 3f;
+    [Range(0f, 100f)] public float overshootReduction = 0f;
 
     [HideInInspector] public float inspectDistance;
     [HideInInspector] public float inspectVelocity;
@@ -45,6 +46,7 @@ public class Graph : MonoBehaviour
     [HideInInspector] public float inspectPosition;
     [HideInInspector] public float inspectTarget;
     [HideInInspector] public int inspectStep;
+    [HideInInspector] public float inspectTime;
 
     IEnumerable<float> GenerateInput()
     {
@@ -101,20 +103,21 @@ public class Graph : MonoBehaviour
         float objectPosition = 0f;
         float objectVelocity = 0f;
         float targetPosition = 0f;
+        float targetVelocity;
         var inputGenerator = GenerateInput().GetEnumerator();
         for (int i = 0; i < steps; ++i)
         {
             float inputValue = inputGenerator.Current;
             inputGenerator.MoveNext();
 
-            float previousTarget = targetPosition;
+            targetVelocity = inputValue * speed;
             switch (positioning)
             {
                 case Positioning.Relative:
-                    targetPosition = objectPosition + inputValue * speed;
+                    targetPosition = objectPosition + targetVelocity;
                     break;
                 case Positioning.Absolute:
-                    targetPosition += inputValue * speed * deltaTime;
+                    targetPosition += targetVelocity * deltaTime;
                     break;
             }
 
@@ -122,6 +125,7 @@ public class Graph : MonoBehaviour
             {
                 inspectInput = inputValue;
                 inspectTarget = targetPosition;
+                inspectTime = i * deltaTime;
             }
 
             switch (smoothing)
@@ -133,16 +137,7 @@ public class Graph : MonoBehaviour
                     objectPosition = SmoothCD.Original(objectPosition, targetPosition, ref objectVelocity, smoothTime, maxSpeed, deltaTime);
                     break;
                 case SmoothingFunction.OvershootFix:
-                    // Prevent overshooting
-                    float targetVelocity = (targetPosition - previousTarget) / deltaTime;
-                    if (positioning == Positioning.Relative)
-                    {
-                        targetVelocity = inputValue * speed;
-                    }
-                    float projectedTarget = targetPosition + targetVelocity * smoothTime;
-                    float projectedPosition = objectPosition + objectVelocity * smoothTime;
-                    float overshoot = (projectedTarget - projectedPosition) / 3f;
-                    objectPosition = SmoothCD.Original(objectPosition, targetPosition + overshoot, ref objectVelocity, smoothTime, maxSpeed, deltaTime);
+                    objectPosition = SmoothCD.PreventOvershoot(objectPosition, targetPosition, ref objectVelocity, targetVelocity, smoothTime, maxSpeed, deltaTime, overshootReduction);
                     break;
             }
 

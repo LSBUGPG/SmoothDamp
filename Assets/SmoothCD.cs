@@ -30,4 +30,17 @@ public static class SmoothCD
 
         return output;
     }
+
+    public static float PreventOvershoot(float current, float target, ref float velocity, float targetVelocity, float smoothTime, float maxSpeed, float deltaTime, float overshootReduction)
+    {
+        // predict the overshoot
+        float projectedTarget = target + targetVelocity * smoothTime;
+        float projectedPosition = current + velocity * smoothTime;
+        float overshoot = projectedPosition - projectedTarget;
+
+        // adjust the target to prevent overshooting
+        target -= overshoot * overshootReduction;
+
+        return Original(current, target, ref velocity, smoothTime, maxSpeed, deltaTime);
+    }
 }
