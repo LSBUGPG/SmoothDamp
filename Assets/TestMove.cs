@@ -6,7 +6,6 @@ public class TestMove : MonoBehaviour
     {
         Original,
         Unity,
-        DogsFix,
         OvershootFix,
     }
 
@@ -22,6 +21,7 @@ public class TestMove : MonoBehaviour
     public float speed = 5f;
     float velocity = 0;
     float target = 0;
+    float previousTarget = 0;
 
     void Update()
     {
@@ -45,13 +45,20 @@ public class TestMove : MonoBehaviour
             case SmoothingFunction.Unity:
                 position.y = Mathf.SmoothDamp(position.y, target, ref velocity, smoothTime, Mathf.Infinity, Time.deltaTime);
                 break;
-            case SmoothingFunction.DogsFix:
-                position.y = SmoothCD.DogsFix(position.y, target, ref velocity, smoothTime, Mathf.Infinity, Time.deltaTime);
-                break;
             case SmoothingFunction.OvershootFix:
-                position.y = SmoothCD.Original(position.y, target, ref velocity, smoothTime, Mathf.Infinity, Time.deltaTime);
+                // Prevent overshooting
+                float targetVelocity = (target - previousTarget) / Time.deltaTime;
+                if (positioning == Positioning.Relative)
+                {
+                    targetVelocity = input * speed;
+                }
+                float projectedTarget = target + targetVelocity * smoothTime;
+                float projectedPosition = position.y + velocity * smoothTime;
+                float overshoot = (projectedTarget - projectedPosition) / 3f;
+                position.y = SmoothCD.Original(position.y, target + overshoot, ref velocity, smoothTime, Mathf.Infinity, Time.deltaTime);
                 break;
         }
         transform.position = position;
+        previousTarget = target;
     }
 }

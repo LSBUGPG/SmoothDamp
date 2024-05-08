@@ -9,7 +9,6 @@ public class Graph : MonoBehaviour
     {
         UnitySmoothDamp,
         GraphicsGemsSmoothDamp,
-        DogsFix,
         OvershootFix,
     }
 
@@ -25,7 +24,6 @@ public class Graph : MonoBehaviour
     public LineRenderer position;
     public LineRenderer target;
     public LineRenderer axis;
-    public LineRenderer overshoot;
 
     public SmoothingFunction smoothing;
     public Positioning positioning;
@@ -39,7 +37,7 @@ public class Graph : MonoBehaviour
     [Range(0f, 2f)] public float neutral = 1f;
     [Range(1f, 10f)] public float inputChangeVelocity = 3f;
     [Range(0f, 1f)] public float inspect = 0f;
-    [Range(0f, 1f)] public float cf;
+    [Range(1f, 10f)] public float maxSpeed = 3f;
 
     [HideInInspector] public float inspectDistance;
     [HideInInspector] public float inspectVelocity;
@@ -97,7 +95,6 @@ public class Graph : MonoBehaviour
         ConfigureLineRenderer(input, steps, Color.blue);
         ConfigureLineRenderer(position, steps, Color.yellow);
         ConfigureLineRenderer(target, steps, Color.magenta);
-        ConfigureLineRenderer(overshoot, steps, Color.cyan);
         axis.SetPosition(0, new Vector3(x * inspectStep, 10f, 0));
         axis.SetPosition(1, new Vector3(x * inspectStep, -10f, 0));
 
@@ -127,49 +124,25 @@ public class Graph : MonoBehaviour
                 inspectTarget = targetPosition;
             }
 
-            float overshotAmount = 0;
             switch (smoothing)
             {
                 case SmoothingFunction.UnitySmoothDamp:
-                    objectPosition = Mathf.SmoothDamp(objectPosition, targetPosition, ref objectVelocity, smoothTime, Mathf.Infinity, deltaTime);
+                    objectPosition = Mathf.SmoothDamp(objectPosition, targetPosition, ref objectVelocity, smoothTime, maxSpeed, deltaTime);
                     break;
                 case SmoothingFunction.GraphicsGemsSmoothDamp:
-                    objectPosition = SmoothCD.Original(objectPosition, targetPosition, ref objectVelocity, smoothTime, Mathf.Infinity, deltaTime);
-                    break;
-                case SmoothingFunction.DogsFix:
-                    objectPosition = SmoothCD.DogsFix(objectPosition, targetPosition, ref objectVelocity, smoothTime, Mathf.Infinity, deltaTime);
+                    objectPosition = SmoothCD.Original(objectPosition, targetPosition, ref objectVelocity, smoothTime, maxSpeed, deltaTime);
                     break;
                 case SmoothingFunction.OvershootFix:
-                    // if (objectVelocity > 0f && previousTarget > objectPosition && targetPosition < objectPosition)
-                    // {
-                    //     objectVelocity = (targetPosition - objectPosition) / deltaTime;
-                    //     objectPosition = targetPosition;
-                    // }
-                    // else if (objectVelocity < 0f && previousTarget < objectPosition && targetPosition > objectPosition)
-                    // {
-                    //     objectVelocity = (targetPosition - objectPosition) / deltaTime;
-                    //     objectPosition = targetPosition;
-                    // }
-                    // else
+                    // Prevent overshooting
+                    float targetVelocity = (targetPosition - previousTarget) / deltaTime;
+                    if (positioning == Positioning.Relative)
                     {
-                        // Prevent overshooting
-                        float targetVelocity = Mathf.Clamp((targetPosition - previousTarget) / deltaTime, -speed, speed);
-                        if (positioning == Positioning.Relative)
-                        {
-                            targetVelocity = inputValue * speed;
-                        }
-                        float projectedTarget = targetPosition + targetVelocity * smoothTime;
-                        float projectedPosition = objectPosition + objectVelocity * smoothTime;
-                        float direction = targetPosition - objectPosition;
-                        float overshoot = projectedTarget - projectedPosition;
-                        if ((direction > 0f && overshoot < 0f) || (direction < 0f && overshoot > 0f))
-                        {
-                            overshotAmount = overshoot;
-                            objectVelocity += Mathf.Lerp(0, overshoot / smoothTime, cf);
-                            //objectVelocity *= cf;//Mathf.Lerp((projectedTarget - objectPosition) / smoothTime, objectVelocity, cf);
-                        }
-                        objectPosition = SmoothCD.Original(objectPosition, targetPosition, ref objectVelocity, smoothTime, Mathf.Infinity, deltaTime);
+                        targetVelocity = inputValue * speed;
                     }
+                    float projectedTarget = targetPosition + targetVelocity * smoothTime;
+                    float projectedPosition = objectPosition + objectVelocity * smoothTime;
+                    float overshoot = (projectedTarget - projectedPosition) / 3f;
+                    objectPosition = SmoothCD.Original(objectPosition, targetPosition + overshoot, ref objectVelocity, smoothTime, maxSpeed, deltaTime);
                     break;
             }
 
@@ -178,7 +151,6 @@ public class Graph : MonoBehaviour
             input.SetPosition(i, new Vector3(i * x, inputValue, 0));
             position.SetPosition(i, new Vector3(i * x, objectPosition, 0));
             target.SetPosition(i, new Vector3(i * x, targetPosition, 0));
-            overshoot.SetPosition(i, new Vector3(i * x, overshotAmount, 0));
 
             if (i == inspectStep)
             {
