@@ -6,7 +6,9 @@ The origin of the Unity SmoothDamp function is from the book [Game Programming G
 
 Here is the original code converted to C#
 
-```.cs
+```csharp
+public static class SmoothCD
+{
     public static float Original(float from, float to, ref float vel, float smoothTime, float deltaTime)
     {
         float omega = 2f / smoothTime;
@@ -17,4 +19,5 @@ Here is the original code converted to C#
         vel = (vel - omega * temp) * exp; // Equation 5
         return to + (change + temp) * exp; // Equation 4
     }
+}
 ```
