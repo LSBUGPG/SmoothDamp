@@ -70,3 +70,20 @@ public static float SmoothDampUnity(float current, float target, ref float curre
     return output;
 }
 ```
+
+## The bug
+
+The inconsistent behaviour comes from the code Unity added to prevent overshooting:
+
+```csharp
+    // Prevent overshooting
+    if (originalTo - current > 0.0F == output > originalTo)
+    {
+        output = originalTo;
+        currentVelocity = (output - originalTo) / deltaTime;
+    }
+```
+
+With this code removed, the function behaves identically to the original.
+
+One issue with this code is in the conditional. It is a rare example of an `XNOR` (the opposite of an exclusive or) which will be `true` if both sides are `true` or if both are `false`. The first condition `originalTo - current > 0.0F` asks if we are moving in a positive direction, the second asks if the output would take us beyond the target. The opposite cases ought to be if we are moving in a negative direction and our output would be before the target, but it includes the case that we are not moving and the output matches the target.
