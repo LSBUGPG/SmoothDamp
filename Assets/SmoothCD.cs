@@ -13,22 +13,18 @@ public static class SmoothCD
         return to + (change + temp) * exp; // Equation 4
     }
 
-    public static float Original(float current, float target, ref float velocity, float smoothTime, float maxSpeed, float deltaTime)
+    public static float Original(float from, float to, ref float vel, float smoothTime, float maxSpeed, float deltaTime)
     {
-        // Based on Game Programming Gems 4 Chapter 1.10
-        smoothTime = Mathf.Max(0.0001F, smoothTime);
         float omega = 2f / smoothTime;
         float x = omega * deltaTime;
-        float exp = 1F / (1F + x + 0.48F * x * x + 0.235F * x * x * x);
-        float change = current - target;
+        float exp = 1f / (1f + x + 0.48f * x * x + 0.235f * x * x * x);
+        float change = to - from;
         // Clamp maximum speed
         float maxChange = maxSpeed * smoothTime;
         change = Mathf.Clamp(change, -maxChange, maxChange);
-        float temp = (velocity + omega * change) * deltaTime;
-        velocity = (velocity - omega * temp) * exp;
-        float output = current - change + (change + temp) * exp;
-
-        return output;
+        float temp = (vel - omega * change) * deltaTime;
+        vel = (vel - omega * temp) * exp;
+        return from + change + (temp - change) * exp;
     }
 
     public static float PreventOvershoot(float current, float target, ref float velocity, float targetVelocity, float smoothTime, float maxSpeed, float deltaTime, float overshootReduction)
