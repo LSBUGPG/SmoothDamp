@@ -98,7 +98,7 @@ Using this method we maintain a target position and modify it with time adjusted
     target += input * speed * Time.deltaTime;
 ```
 
-This method produces smooth movement and the smoothed object can take a while to reach the target. Note, despite the documentation, it takes much longer than the `smoothTime` to reach the target. The original Gems article notes that a good definition for `smoothTime` is "the expected time to reach the target _when at maximum velocity_." However, since the velocity falls off as you approach the target it takes longer than `smoothTime` alone.
+This method produces smooth movement and the smoothed object can take a while to reach the target. Note, despite the documentation, it takes much longer than the `smoothTime` to reach the target. The original Gems article notes that a good definition for `smoothTime` is "the expected time to reach the target _when at maximum velocity_." However, since it takes some time to reach maximum velocity and it falls off as you approach the target it takes longer than `smoothTime` alone.
 
 ### Relative target
 
