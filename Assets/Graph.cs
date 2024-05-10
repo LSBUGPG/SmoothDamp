@@ -7,12 +7,13 @@ public class Graph : MonoBehaviour
 {
     public enum SmoothingFunction
     {
-        UnitySmoothDamp,
         GraphicsGemsSmoothDamp,
+        UnitySmoothDamp,
+        ModifiedSmoothDamp,
         OvershootFix,
     }
 
-    public enum Positioning
+    public enum Targeting
     {
         Relative,
         Absolute,
@@ -26,7 +27,7 @@ public class Graph : MonoBehaviour
     public LineRenderer axis;
 
     public SmoothingFunction smoothing;
-    public Positioning positioning;
+    public Targeting targeting;
     [Range(0.001f, 1)] public float width = 0.05f;
     [Range(0.001f, 5)] public float smoothTime = 1f;
     [Range(0.5f, 100f)] public float speed = 1f;
@@ -34,8 +35,8 @@ public class Graph : MonoBehaviour
     [Range(1, 10)] public float time = 1f;
     [Range(0f, 2f)] public float positive = 1f;
     [Range(0f, 2f)] public float negative = 1f;
-    [Range(0f, 2f)] public float neutral = 1f;
-    [Range(1f, 10f)] public float inputChangeVelocity = 3f;
+    [Range(0f, 5f)] public float neutral = 1f;
+    [Range(1f, 100f)] public float inputChangeVelocity = 3f;
     [Range(0f, 1f)] public float inspect = 0f;
     [Range(1f, 20f)] public float maxSpeed = 3f;
     [Range(0f, 100f)] public float overshootReduction = 0f;
@@ -111,12 +112,12 @@ public class Graph : MonoBehaviour
             inputGenerator.MoveNext();
 
             targetVelocity = inputValue * speed;
-            switch (positioning)
+            switch (targeting)
             {
-                case Positioning.Relative:
+                case Targeting.Relative:
                     targetPosition = objectPosition + targetVelocity;
                     break;
-                case Positioning.Absolute:
+                case Targeting.Absolute:
                     targetPosition += targetVelocity * deltaTime;
                     break;
             }
@@ -126,12 +127,24 @@ public class Graph : MonoBehaviour
                 inspectInput = inputValue;
                 inspectTarget = targetPosition;
                 inspectTime = i * deltaTime;
+                inspectDistance = targetPosition - objectPosition;
+                inspectVelocity = objectVelocity;
+                inspectPosition = objectPosition;
             }
+
+            distance.SetPosition(i, new Vector3(i * x, targetPosition - objectPosition, 0));
+            velocity.SetPosition(i, new Vector3(i * x, objectVelocity, 0));
+            input.SetPosition(i, new Vector3(i * x, inputValue, 0));
+            position.SetPosition(i, new Vector3(i * x, objectPosition, 0));
+            target.SetPosition(i, new Vector3(i * x, targetPosition, 0));
 
             switch (smoothing)
             {
                 case SmoothingFunction.UnitySmoothDamp:
                     objectPosition = Mathf.SmoothDamp(objectPosition, targetPosition, ref objectVelocity, smoothTime, maxSpeed, deltaTime);
+                    break;
+                case SmoothingFunction.ModifiedSmoothDamp:
+                    objectPosition = SmoothCD.SmoothDampModified(objectPosition, targetPosition, ref objectVelocity, smoothTime, maxSpeed, deltaTime);
                     break;
                 case SmoothingFunction.GraphicsGemsSmoothDamp:
                     objectPosition = SmoothCD.Original(objectPosition, targetPosition, ref objectVelocity, smoothTime, maxSpeed, deltaTime);
@@ -141,18 +154,6 @@ public class Graph : MonoBehaviour
                     break;
             }
 
-            distance.SetPosition(i, new Vector3(i * x, targetPosition - objectPosition, 0));
-            velocity.SetPosition(i, new Vector3(i * x, objectVelocity, 0));
-            input.SetPosition(i, new Vector3(i * x, inputValue, 0));
-            position.SetPosition(i, new Vector3(i * x, objectPosition, 0));
-            target.SetPosition(i, new Vector3(i * x, targetPosition, 0));
-
-            if (i == inspectStep)
-            {
-                inspectDistance = targetPosition - objectPosition;
-                inspectVelocity = objectVelocity;
-                inspectPosition = objectPosition;
-            }
         }
     }
 }
