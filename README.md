@@ -112,4 +112,30 @@ This method responds to changes much faster than the absolute method and by defi
 
 ## Testing the output
 
+Included in this project is the scene `Graph` which graphs traces from various variables involved in applying the `SmoothDamp` function. Each trace is represented by an object in the scene and each has a line renderer linked to the `Graph` object. You can turn on and off any of the traces by turning off the objects in the scene.
 
+| trace | colour | meaning |
+|---|---|---|
+| Distance | red | the distance between the current position and the target |
+| Velocity | green | the current velocity as maintained by the `SmoothDamp` function |
+| Input | blue | the current input * speed |
+| Position | yellow | the current position value as updated by `SmoothDamp` |
+| Target | magenta | the current target position |
+
+It also has many parameters to help diagnose the issue:
+
+| parameter | meaning |
+|---|---|
+| Smoothing | the smoothing function to use, including the original Gems function, the current Unity function, and modifications |
+| Targeting | either relative or absolute positioning of the target as described above |
+| Width | the width of the line |
+| Smooth Time | the `smoothTime` parameter passed to `SmoothDamp` |
+| Speed | the speed multiplier applied to the input. This effective sets the vertical scale of the graph |
+| Delta Time | the `deltaTime` parameter passed to `SmoothDamp` 0.01667 for 60 fps, 0.03333 for 30 fps, and so on |
+| Time | how much time is covered by the graph compensating for Delta Time. This effective sets the horizontal scale of the graph |
+| Positive | the amount of time the input is held positive |
+| Negative | the amount of time the input is held negative |
+| Neutral | the amount of time the input is allowed to fall to zero |
+| Input Change Velocity | how fast the input increases to maximum or falls to zero |
+| Inspect | a vertical line for inspecting the values at that point in the graph; the values are output in the `Inspector` window |
+| Max Speed | the `maxSpeed` parameter passed to `SmoothDamp` |
