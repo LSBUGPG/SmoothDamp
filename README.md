@@ -37,7 +37,7 @@ Unfortunately, the extension for `maxSpeed` is not fully described, and simply a
     }
 ```
 
-And finally, from the bug report, a Unity developer posted the source code that Unity uses:
+A Unity developer posted the source code that Unity uses as a comment in the above bug report:
 
 ```csharp
 public static float SmoothDampUnity(float current, float target, ref float currentVelocity, float smoothTime, float maxSpeed, float deltaTime)
@@ -84,6 +84,32 @@ The inconsistent behaviour comes from the code Unity added to prevent overshooti
     }
 ```
 
-With this code removed, the function behaves identically to the original.
-
 One issue with this code is in the conditional. It is a rare example of an `XNOR` (the opposite of an exclusive or) which will be `true` if both sides are `true` or if both are `false`. The first condition `originalTo - current > 0.0F` asks if we are moving in a positive direction, the second asks if the output would take us beyond the target. The opposite cases ought to be if we are moving in a negative direction and our output would be before the target, but it includes the case that we are not moving and the output matches the target.
+
+## The use cases
+
+There are two commonly used methods to set the target position for the `SmoothDamp` function. I call these, the `relative` and `absolute` methods.
+
+### Absolute target
+
+Using this method we maintain a target position and modify it with time adjusted input:
+
+```csharp
+    target += input * speed * Time.deltaTime;
+```
+
+This method produces smooth movement and the smoothed object can take a while to reach the target. Note, despite the documentation, it takes much longer than the `smoothTime` to reach the target. The original Gems article notes that a good definition for `smoothTime` is "the expected time to reach the target _when at maximum velocity_." However, since the velocity falls off as you approach the target it takes longer than `smoothTime` alone.
+
+### Relative target
+
+Using this method we position the target relative to the current position based on the input:
+
+```csharp
+    target = current + input * speed;
+```
+
+This method responds to changes much faster than the absolute method and by definition it reaches target as soon as the input drops to zero. Note that the original Gems version of the function allows the velocity value to come to a smooth halt. Whereas the Unity version attempts to zero out the velocity once the input drops to zero. This (I believe) is the overshoot that they are attempting to prevent with the additional code. As noted earlier, this happens inconsistently in the Unity code.
+
+## Testing the output
+
+
