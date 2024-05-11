@@ -9,7 +9,8 @@ public class Graph : MonoBehaviour
     {
         GraphicsGemsSmoothDamp,
         UnitySmoothDamp,
-        ModifiedSmoothDamp,
+        SmoothDampZeroCheck,
+        SmoothDampTest,
         OvershootFix,
     }
 
@@ -143,8 +144,11 @@ public class Graph : MonoBehaviour
                 case SmoothingFunction.UnitySmoothDamp:
                     objectPosition = Mathf.SmoothDamp(objectPosition, targetPosition, ref objectVelocity, smoothTime, maxSpeed, deltaTime);
                     break;
-                case SmoothingFunction.ModifiedSmoothDamp:
-                    objectPosition = SmoothCD.SmoothDampModified(objectPosition, targetPosition, ref objectVelocity, smoothTime, maxSpeed, deltaTime);
+                case SmoothingFunction.SmoothDampTest:
+                    objectPosition = SmoothCD.SmoothDampTest(objectPosition, targetPosition, ref objectVelocity, smoothTime, maxSpeed, deltaTime);
+                    break;
+                case SmoothingFunction.SmoothDampZeroCheck:
+                    objectPosition = SmoothCD.SmoothDampZeroCheck(objectPosition, targetPosition, ref objectVelocity, smoothTime, maxSpeed, deltaTime);
                     break;
                 case SmoothingFunction.GraphicsGemsSmoothDamp:
                     objectPosition = SmoothCD.Original(objectPosition, targetPosition, ref objectVelocity, smoothTime, maxSpeed, deltaTime);

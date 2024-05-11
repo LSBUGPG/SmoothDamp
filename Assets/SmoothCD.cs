@@ -28,7 +28,37 @@ public static class SmoothCD
         return from + change + (temp - change) * exp;
     }
 
-    public static float SmoothDampModified(float current, float target, ref float currentVelocity, float smoothTime, float maxSpeed, float deltaTime)
+    public static float SmoothDampZeroCheck(float current, float target, ref float currentVelocity, float smoothTime, float maxSpeed, float deltaTime)
+    {
+        // Based on Game Programming Gems 4 Chapter 1.10
+        smoothTime = Mathf.Max(0.0001F, smoothTime);
+        float omega = 2F / smoothTime;
+        
+        float x = omega * deltaTime;
+        float exp = 1F / (1F + x + 0.48F * x * x + 0.235F * x * x * x);
+        float change = current - target;
+        float originalTo = target;
+
+        // Clamp maximum speed
+        float maxChange = maxSpeed * smoothTime;
+        change = Mathf.Clamp(change, -maxChange, maxChange);
+        target = current - change;
+        
+        float temp = (currentVelocity + omega * change) * deltaTime;
+        currentVelocity = (currentVelocity - omega * temp) * exp;
+        float output = target + (change + temp) * exp;
+    
+        // Prevent overshooting
+        if (originalTo == current || originalTo > current == output > originalTo)
+        {
+            output = originalTo;
+            currentVelocity = (output - originalTo) / deltaTime;
+        }
+        
+        return output;
+    }
+
+    public static float SmoothDampTest(float current, float target, ref float currentVelocity, float smoothTime, float maxSpeed, float deltaTime)
     {
         // Based on Game Programming Gems 4 Chapter 1.10
         smoothTime = Mathf.Max(0.0001F, smoothTime);
@@ -56,7 +86,7 @@ public static class SmoothCD
         float output = target + (change + temp) * exp;
     
         // Prevent overshooting
-        if ((originalTo - current >= 0.0F && output >= originalTo) || (originalTo - current <= 0.0F && output <= originalTo))
+        if (originalTo == current || originalTo > current == output > originalTo)
         {
             output = originalTo;
             currentVelocity = (output - originalTo) / deltaTime;
