@@ -178,7 +178,7 @@ If we change the overshoot conditional check to:
         if (originalTo == current || originalTo > current == output > originalTo)
 ```
 
-This fixes the above case and is stable across the range of frame timings.
+This fixes the above case and is stable across the range of frame timings. This modified function can be simulated using the `Smooth Damp Zero Check` option for the `Smoothing` parameter.
 
 ![image](https://github.com/LSBUGPG/SmoothDamp/assets/3679392/ea72e8a5-9899-4c72-8b8a-0e6eff761427)
 
@@ -194,6 +194,6 @@ Everything looks good here. But here is the 0.01667 Delta Time case:
 
 ![image](https://github.com/LSBUGPG/SmoothDamp/assets/3679392/2c56256e-99ad-4329-925e-7b259c09b4cd)
 
-Both crossings are missed.
+Both crossings are missed and the current position overshoots the target.
 
 
