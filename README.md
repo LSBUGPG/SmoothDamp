@@ -178,4 +178,18 @@ If we change the overshoot conditional check to:
         if (originalTo == current || originalTo > current == output > originalTo)
 ```
 
-This fixes the relative target case. However, it does so in a somewhat unsatisfactory way. It detects the overshoot because when the normal test fails, the zero check catches it. This works in the case that the input value drops to exactly zero for at least a frame. But what happens if the input value crosses zero without hitting it?
+This fixes the above case and is stable across the range of frame timings. However, it does so in a somewhat unsatisfactory way. It detects the overshoot because when the normal test fails, the zero check catches it. This works in the case that the input value drops to exactly zero for at least a frame. But what happens if the input value crosses zero without hitting it?
+
+We can simulate this by dropping the `Neutral` parameter to 0. This effectively lowers the time to complete the action so let's drop `Time` to 3 as well.
+
+Here is the 0.03333 Delta Time:
+
+![image](https://github.com/LSBUGPG/SmoothDamp/assets/3679392/7c4330ee-8dec-47a7-bf35-06dd09e921da)
+
+Everything looks good here. But here is the 0.01667 Delta Time case:
+
+![image](https://github.com/LSBUGPG/SmoothDamp/assets/3679392/2c56256e-99ad-4329-925e-7b259c09b4cd)
+
+Both crossings are missed.
+
+
