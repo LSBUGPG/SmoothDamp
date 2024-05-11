@@ -164,6 +164,18 @@ But it is unstable. Change the `Delta Time` parameter to 0.01667 (60 FPS) and th
 
 ![image](https://github.com/LSBUGPG/SmoothDamp/assets/3679392/25f048cf-f437-4b61-891c-fa7d7f3562ce)
 
-Looking closely at the point where the target position and current position cross, the difference is that with 0.03333 Delta Time, they cross slightly after frame 41 where the input value is almost but not quite zero. Whereas with 0.01667 Delta Time, they cross on frame 80 when the input value is exactly zero.
+Looking closely at the first point where the current position is moving positive and crosses the target position. With 0.03333 Delta Time, they cross slightly after frame 41 where the difference between the current value and the target value is almost, but not quite, zero. The overshoot is detected and the velocity is reduced to zero on frame 42. With 0.01667 Delta Time, they first cross on frame 80 where the current value exactly equals the target value. In this case, the overshoot code is not triggered.
 
-So the overshoot prevention condition triggers as expected when the input value is not zero and doesn't trigger when it is.
+Then looking at the second crossing where the current position is moving negatively and crosses the target position. With 0.03333 Delta Time, they cross slightly after frame 103 where the difference between the current value and the target value is again very small, but not zero. The overshoot is detected and the velocity is reduced to zero on frame 104. With 0.01667 Delta Time, they cross on frame 200 where again the current value exactly equals the target value. But this time the overshoot is detected and the velocity is reduced to zero on frame 201.
+
+So it seems that the overshoot check is sensitive to the timing of where the frames fall, unless the velocity is negative, in which case the detection of zero difference between the current and target position always trips the overshoot check.
+
+## Potential Fix
+
+If we change the overshoot conditional check to:
+
+```csharp
+        if (originalTo == current || originalTo > current == output > originalTo)
+```
+
+This fixes the relative target case. However, it does so in a somewhat unsatisfactory way. It detects the overshoot because when the normal test fails, the zero check catches it. This works in the case that the input value drops to exactly zero for at least a frame. But what happens if the input value crosses zero without hitting it?
