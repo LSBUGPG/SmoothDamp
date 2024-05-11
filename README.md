@@ -146,7 +146,7 @@ Here is an example of the original Gems code using the following setup:
 |---|---|
 | Smooth Time | 1 |
 | Speed | 2 |
-| Delta Time | 0.016667 |
+| Delta Time | 0.03333 |
 | Time | 4 |
 | Positive | 1 |
 | Negative | 1 |
@@ -157,5 +157,9 @@ Here is an example of the original Gems code using the following setup:
 ![image](https://github.com/LSBUGPG/SmoothDamp/assets/3679392/5033242f-b5bb-4a90-9b86-1b1457c119b9)
 
 And here is the Unity `SmoothDamp` function with the same parameters:
+
+![image](https://github.com/LSBUGPG/SmoothDamp/assets/3679392/7eefe006-3ffe-4694-837b-fe8eca06576e)
+
+But it is unstable. Change the `Delta Time` parameter to 0.01667 (60 FPS) and the curve looks like this:
 
 ![image](https://github.com/LSBUGPG/SmoothDamp/assets/3679392/25f048cf-f437-4b61-891c-fa7d7f3562ce)
