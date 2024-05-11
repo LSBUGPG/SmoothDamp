@@ -139,3 +139,23 @@ It also has many parameters to help diagnose the issue:
 | Input Change Velocity | how fast the input increases to maximum or falls to zero |
 | Inspect | a vertical line for inspecting the values at that point in the graph; the values are output in the `Inspector` window |
 | Max Speed | the `maxSpeed` parameter passed to `SmoothDamp` |
+
+Here is an example of the original Gems code using the following setup:
+
+| parameter | value |
+|---|---|
+| Smooth Time | 1 |
+| Speed | 2 |
+| Delta Time | 0.016667 |
+| Time | 4 |
+| Positive | 1 |
+| Negative | 1 |
+| Neutral | 1 |
+| Input Change Velocity | 3 |
+| Max Speed | 20 |
+
+![image](https://github.com/LSBUGPG/SmoothDamp/assets/3679392/5033242f-b5bb-4a90-9b86-1b1457c119b9)
+
+And here is the Unity `SmoothDamp` function with the same parameters:
+
+![image](https://github.com/LSBUGPG/SmoothDamp/assets/3679392/25f048cf-f437-4b61-891c-fa7d7f3562ce)
