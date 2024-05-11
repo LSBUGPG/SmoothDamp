@@ -178,7 +178,11 @@ If we change the overshoot conditional check to:
         if (originalTo == current || originalTo > current == output > originalTo)
 ```
 
-This fixes the above case and is stable across the range of frame timings. However, it does so in a somewhat unsatisfactory way. It detects the overshoot because when the normal test fails, the zero check catches it. This works in the case that the input value drops to exactly zero for at least a frame. But what happens if the input value crosses zero without hitting it?
+This fixes the above case and is stable across the range of frame timings.
+
+![image](https://github.com/LSBUGPG/SmoothDamp/assets/3679392/ea72e8a5-9899-4c72-8b8a-0e6eff761427)
+
+However, it does this in a somewhat unsatisfactory way. It detects the overshoot because when the normal test fails, the zero check catches it. This works in the case that the input value drops to exactly zero for at least a frame. But what happens if the input value crosses zero without hitting it?
 
 We can simulate this by dropping the `Neutral` parameter to 0. This effectively lowers the time to complete the action so let's drop `Time` to 3 as well.
 
