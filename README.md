@@ -163,3 +163,7 @@ And here is the Unity `SmoothDamp` function with the same parameters:
 But it is unstable. Change the `Delta Time` parameter to 0.01667 (60 FPS) and the curve looks like this:
 
 ![image](https://github.com/LSBUGPG/SmoothDamp/assets/3679392/25f048cf-f437-4b61-891c-fa7d7f3562ce)
+
+Looking closely at the point where the target position and current position cross, the difference is that with 0.03333 Delta Time, they cross slightly after frame 41 where the input value is almost but not quite zero. Whereas with 0.01667 Delta Time, they cross on frame 80 when the input value is exactly zero.
+
+So the overshoot prevention condition triggers as expected when the input value is not zero and doesn't trigger when it is.
