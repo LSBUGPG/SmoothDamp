@@ -194,6 +194,6 @@ Everything looks good here. But here is the 0.01667 Delta Time case:
 
 ![image](https://github.com/LSBUGPG/SmoothDamp/assets/3679392/2c56256e-99ad-4329-925e-7b259c09b4cd)
 
-Both crossings are missed and the current position overshoots the target.
+Both crossings are missed and the current position overshoots the target. What is happenning in this case is that on the frame before the crossing occurs, it is not detected because in fact the new position does not indeed cross the old target (even though it does cross the next frame's target.)
 
-
+To catch cases like this we would need to look ahead.
