@@ -194,6 +194,29 @@ Everything looks good here. But here is the 0.01667 Delta Time case:
 
 ![image](https://github.com/LSBUGPG/SmoothDamp/assets/3679392/2c56256e-99ad-4329-925e-7b259c09b4cd)
 
-Both crossings are missed and the current position overshoots the target. What is happenning in this case is that on the frame before the crossing occurs, it is not detected because in fact the new position does not indeed cross the old target (even though it does cross the next frame's target.)
+Both crossings are missed and the current position overshoots the target. What is happenning, in this case, is that on the frame before the crossing occurs, it is not detected because in fact the new position does not indeed cross the old target (even though it does cross the next frame's target.)
 
-To catch cases like this we would need to look ahead.
+To catch cases like this we would need to handle cases with a moving target. And that means adding more input to the function:
+
+```csharp
+    public static float SmoothDampMovingTarget(float current, float target, ref float currentVelocity, float previousTarget, float smoothTime, float maxSpeed, float deltaTime)
+```
+
+The code for this will be the same as before, but this time changing the overshoot check to:
+
+```csharp
+        // Prevent overshooting
+        if (target == current ||
+            (previousTarget < current && current < target) || 
+            (previousTarget > current && current > target) ||
+            (target > current && output > target) ||
+            (target < current && output < target))
+```
+
+This works pretty much like the Unity SmoothDamp version in the relative target case, but it is relatively stable and works in both the postivie and negative directions.
+
+There is still a small issue which shows up in the cases with slightly different Delta Times (e.g. 0.0165):
+
+![image](https://github.com/LSBUGPG/SmoothDamp/assets/3679392/b820c5d7-2277-40e0-810b-9d8612da0906)
+
+The clamping behaviour of the Unity code is causing a slight glitch in the position of the object as the target passes by.
