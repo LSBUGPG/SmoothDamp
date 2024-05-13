@@ -21,12 +21,14 @@ public class TestMove : MonoBehaviour
     public float speed = 5f;
     float velocity = 0;
     float target = 0;
+    float previousTarget = 0;
 
     void Update()
     {
         Vector3 position = transform.position;
         float input = Input.GetAxis("Vertical");
         float targetVelocity = input * speed;
+        previousTarget = target;
         switch (positioning)
         {
             case Positioning.Relative:
@@ -46,7 +48,7 @@ public class TestMove : MonoBehaviour
                 position.y = Mathf.SmoothDamp(position.y, target, ref velocity, smoothTime, Mathf.Infinity, Time.deltaTime);
                 break;
             case SmoothingFunction.OvershootFix:
-                position.y = SmoothCD.PreventOvershoot(position.y, target, ref velocity, targetVelocity, smoothTime, Mathf.Infinity, Time.deltaTime, 0.3f);
+                position.y = SmoothCD.SmoothDampMovingTarget(position.y, target, ref velocity, previousTarget, smoothTime, Mathf.Infinity, Time.deltaTime);
                 break;
         }
         transform.position = position;

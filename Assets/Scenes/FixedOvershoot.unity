@@ -156,7 +156,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   smoothing: 2
-  positioning: 1
+  positioning: 0
   smoothTime: 0.4
   speed: 5
 --- !u!65 &67880620
@@ -458,7 +458,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   smoothing: 0
-  positioning: 1
+  positioning: 0
   smoothTime: 0.4
   speed: 5
 --- !u!1 &963194225
@@ -586,7 +586,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   smoothing: 1
-  positioning: 1
+  positioning: 0
   smoothTime: 0.4
   speed: 5
 --- !u!65 &1254755461

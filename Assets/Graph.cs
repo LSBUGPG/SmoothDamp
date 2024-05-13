@@ -10,8 +10,7 @@ public class Graph : MonoBehaviour
         GraphicsGemsSmoothDamp,
         UnitySmoothDamp,
         SmoothDampZeroCheck,
-        SmoothDampTest,
-        OvershootFix,
+        SmoothDampMovingTarget,
     }
 
     public enum Targeting
@@ -40,7 +39,6 @@ public class Graph : MonoBehaviour
     [Range(1f, 100f)] public float inputChangeVelocity = 3f;
     [Range(0f, 1f)] public float inspect = 0f;
     [Range(1f, 20f)] public float maxSpeed = 3f;
-    [Range(0f, 100f)] public float overshootReduction = 0f;
 
     [HideInInspector] public float inspectDistance;
     [HideInInspector] public float inspectVelocity;
@@ -99,27 +97,27 @@ public class Graph : MonoBehaviour
         ConfigureLineRenderer(input, steps, Color.blue);
         ConfigureLineRenderer(position, steps, Color.yellow);
         ConfigureLineRenderer(target, steps, Color.magenta);
+
         axis.SetPosition(0, new Vector3(x * inspectStep, 10f, 0));
         axis.SetPosition(1, new Vector3(x * inspectStep, -10f, 0));
 
         float objectPosition = 0f;
         float objectVelocity = 0f;
         float targetPosition = 0f;
-        float targetVelocity;
         var inputGenerator = GenerateInput().GetEnumerator();
         for (int i = 0; i < steps; ++i)
         {
             float inputValue = inputGenerator.Current;
             inputGenerator.MoveNext();
 
-            targetVelocity = inputValue * speed;
+            float previousTarget = targetPosition;
             switch (targeting)
             {
                 case Targeting.Relative:
-                    targetPosition = objectPosition + targetVelocity;
+                    targetPosition = objectPosition + inputValue * speed;
                     break;
                 case Targeting.Absolute:
-                    targetPosition += targetVelocity * deltaTime;
+                    targetPosition += inputValue * speed * deltaTime;
                     break;
             }
 
@@ -141,20 +139,17 @@ public class Graph : MonoBehaviour
 
             switch (smoothing)
             {
-                case SmoothingFunction.UnitySmoothDamp:
-                    objectPosition = Mathf.SmoothDamp(objectPosition, targetPosition, ref objectVelocity, smoothTime, maxSpeed, deltaTime);
-                    break;
-                case SmoothingFunction.SmoothDampTest:
-                    objectPosition = SmoothCD.SmoothDampTest(objectPosition, targetPosition, ref objectVelocity, smoothTime, maxSpeed, deltaTime);
-                    break;
-                case SmoothingFunction.SmoothDampZeroCheck:
-                    objectPosition = SmoothCD.SmoothDampZeroCheck(objectPosition, targetPosition, ref objectVelocity, smoothTime, maxSpeed, deltaTime);
-                    break;
                 case SmoothingFunction.GraphicsGemsSmoothDamp:
                     objectPosition = SmoothCD.Original(objectPosition, targetPosition, ref objectVelocity, smoothTime, maxSpeed, deltaTime);
                     break;
-                case SmoothingFunction.OvershootFix:
-                    objectPosition = SmoothCD.PreventOvershoot(objectPosition, targetPosition, ref objectVelocity, targetVelocity, smoothTime, maxSpeed, deltaTime, overshootReduction);
+                case SmoothingFunction.UnitySmoothDamp:
+                    objectPosition = Mathf.SmoothDamp(objectPosition, targetPosition, ref objectVelocity, smoothTime, maxSpeed, deltaTime);
+                    break;
+                case SmoothingFunction.SmoothDampMovingTarget:
+                    objectPosition = SmoothCD.SmoothDampMovingTarget(objectPosition, targetPosition, ref objectVelocity, previousTarget, smoothTime, maxSpeed, deltaTime);
+                    break;
+                case SmoothingFunction.SmoothDampZeroCheck:
+                    objectPosition = SmoothCD.SmoothDampZeroCheck(objectPosition, targetPosition, ref objectVelocity, smoothTime, maxSpeed, deltaTime);
                     break;
             }
 
