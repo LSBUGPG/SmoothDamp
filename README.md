@@ -119,8 +119,8 @@ Included in this project is the scene `Graph` which graphs traces from various v
 | Distance | red | the distance between the current position and the target |
 | Velocity | green | the current velocity as maintained by the `SmoothDamp` function |
 | Input | blue | the current input * speed |
-| Position | yellow | the current position value as updated by `SmoothDamp` |
-| Target | magenta | the current target position |
+| Position | yellow | the current position value before applying `SmoothDamp` |
+| Target | magenta | the target position before updating |
 
 It also has many parameters to help diagnose the issue:
 
@@ -130,9 +130,9 @@ It also has many parameters to help diagnose the issue:
 | Targeting | either relative or absolute positioning of the target as described above |
 | Width | the width of the line |
 | Smooth Time | the `smoothTime` parameter passed to `SmoothDamp` |
-| Speed | the speed multiplier applied to the input. This effective sets the vertical scale of the graph |
+| Speed | the speed multiplier applied to the input. This effectively sets the vertical scale of the graph |
 | Delta Time | the `deltaTime` parameter passed to `SmoothDamp` 0.01667 for 60 fps, 0.03333 for 30 fps, and so on |
-| Time | how much time is covered by the graph compensating for Delta Time. This effective sets the horizontal scale of the graph |
+| Time | how much time is covered by the graph compensating for Delta Time. This effectively sets the horizontal scale of the graph |
 | Positive | the amount of time the input is held positive |
 | Negative | the amount of time the input is held negative |
 | Neutral | the amount of time the input is allowed to fall to zero |
@@ -154,15 +154,15 @@ Here is an example of the original Gems code using the following setup:
 | Input Change Velocity | 3 |
 | Max Speed | 20 |
 
-![image](https://github.com/LSBUGPG/SmoothDamp/assets/3679392/5033242f-b5bb-4a90-9b86-1b1457c119b9)
+![original Gems code graph at 30 FPS](https://github.com/LSBUGPG/SmoothDamp/assets/3679392/5033242f-b5bb-4a90-9b86-1b1457c119b9)
 
 And here is the Unity `SmoothDamp` function with the same parameters:
 
-![image](https://github.com/LSBUGPG/SmoothDamp/assets/3679392/7eefe006-3ffe-4694-837b-fe8eca06576e)
+![Unity SmoothDamp graph at 30 FPS](https://github.com/LSBUGPG/SmoothDamp/assets/3679392/7eefe006-3ffe-4694-837b-fe8eca06576e)
 
 But it is unstable. Change the `Delta Time` parameter to 0.01667 (60 FPS) and the curve looks like this:
 
-![image](https://github.com/LSBUGPG/SmoothDamp/assets/3679392/25f048cf-f437-4b61-891c-fa7d7f3562ce)
+![Unity SmoothDamp graph at 60 FPS](https://github.com/LSBUGPG/SmoothDamp/assets/3679392/25f048cf-f437-4b61-891c-fa7d7f3562ce)
 
 Looking closely at the first point where the current position is moving positive and crosses the target position. With 0.03333 Delta Time, they cross slightly after frame 41 where the difference between the current value and the target value is almost, but not quite, zero. The overshoot is detected and the velocity is reduced to zero on frame 42. With 0.01667 Delta Time, they first cross on frame 80 where the current value exactly equals the target value. In this case, the overshoot code is not triggered.
 
@@ -180,7 +180,7 @@ If we change the overshoot conditional check to:
 
 This fixes the above case and is stable across the range of frame timings. This modified function can be simulated using the `Smooth Damp Zero Check` option for the `Smoothing` parameter.
 
-![image](https://github.com/LSBUGPG/SmoothDamp/assets/3679392/ea72e8a5-9899-4c72-8b8a-0e6eff761427)
+![Smooth Damp Zero Check at 60 FPS](https://github.com/LSBUGPG/SmoothDamp/assets/3679392/ea72e8a5-9899-4c72-8b8a-0e6eff761427)
 
 However, it does this in a somewhat unsatisfactory way. It detects the overshoot because when the normal test fails, the zero check catches it. This works in the case that the input value drops to exactly zero for at least a frame. But what happens if the input value crosses zero without hitting it?
 
@@ -188,13 +188,13 @@ We can simulate this by dropping the `Neutral` parameter to 0. This effectively 
 
 Here is the 0.03333 Delta Time:
 
-![image](https://github.com/LSBUGPG/SmoothDamp/assets/3679392/7c4330ee-8dec-47a7-bf35-06dd09e921da)
+![Smooth Damp Zero Check target crosses current position at 30 FPS](https://github.com/LSBUGPG/SmoothDamp/assets/3679392/7c4330ee-8dec-47a7-bf35-06dd09e921da)
 
 Everything looks good here. But here is the 0.01667 Delta Time case:
 
-![image](https://github.com/LSBUGPG/SmoothDamp/assets/3679392/2c56256e-99ad-4329-925e-7b259c09b4cd)
+![Smooth Damp Zero Check target crosses current position at 60 FPS](https://github.com/LSBUGPG/SmoothDamp/assets/3679392/2c56256e-99ad-4329-925e-7b259c09b4cd)
 
-Both crossings are missed and the current position overshoots the target. What is happenning, in this case, is that on the frame before the crossing occurs, it is not detected because in fact the new position does not indeed cross the old target (even though it does cross the next frame's target.)
+Both crossings are missed and the current position overshoots the target. What is happening, in this case, is that on the frame before the crossing occurs, it is not detected because in fact the new position does not indeed cross the old target (even though it does cross the next frame's target.)
 
 ## Moving target case
 
@@ -215,7 +215,7 @@ The code for this will be the same as before, but this time changing the oversho
             (target < current && output < target))
 ```
 
-This works pretty much like the Unity SmoothDamp version in the relative target case, but it is relatively stable and works in both the postivie and negative directions.
+This works pretty much like the Unity SmoothDamp version in the relative target case, but it is relatively stable and works in both the positive and negative directions.
 
 There is still a small issue which shows up in the cases with slightly different Delta Times (e.g. 0.0165):
 
@@ -266,6 +266,6 @@ The full function handling these cases:
 
 Note that I am applying the original Unity version here, meaning that the overshoot code is effectively running twice. But you can equally substitute the original Gems version of the smoothing function.
 
-Finally it appears to work consistently and remains stable with chaning delta times and performs the way I assume Unity wanted.
+Finally it appears to work consistently and remains stable with changing delta times and performs the way I assume Unity wanted.
 
 I have included the scenes `TestSmoothDampRelative` and `TestSmoothDampAbsolute` to compare the original Gems code, the Unity code, and my fix.
