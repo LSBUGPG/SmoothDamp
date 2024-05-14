@@ -266,4 +266,6 @@ The full function handling these cases:
 
 Note that I am applying the original Unity version here, meaning that the overshoot code is effectively running twice. But you can equally substitute the original Gems version of the smoothing function.
 
-Finally it appears to work consistently and remains stable with chaning delta times.
+Finally it appears to work consistently and remains stable with chaning delta times and performs the way I assume Unity wanted.
+
+I have included the scenes `TestSmoothDampRelative` and `TestSmoothDampAbsolute` to compare the original Gems code, the Unity code, and my fix.
