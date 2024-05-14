@@ -196,6 +196,8 @@ Everything looks good here. But here is the 0.01667 Delta Time case:
 
 Both crossings are missed and the current position overshoots the target. What is happenning, in this case, is that on the frame before the crossing occurs, it is not detected because in fact the new position does not indeed cross the old target (even though it does cross the next frame's target.)
 
+## Moving target case
+
 To catch cases like this we would need to handle cases with a moving target. And that means adding more input to the function:
 
 ```csharp
@@ -219,4 +221,49 @@ There is still a small issue which shows up in the cases with slightly different
 
 ![image](https://github.com/LSBUGPG/SmoothDamp/assets/3679392/b820c5d7-2277-40e0-810b-9d8612da0906)
 
-The clamping behaviour of the Unity code is causing a slight glitch in the position of the object as the target passes by.
+The clamping behaviour of the Unity code is causing a slight glitch in the position of the object as the target passes by. This is the clamping behaviour:
+
+```csharp
+            output = target;
+            currentVelocity = (target - output) / deltaTime;
+```
+
+Looking at this code, the first thing that occurs to me is that after output is set to target, `(target - output)` will always be zero. So, in fact, we could simplify this to:
+
+```csharp
+            output = target;
+            currentVelocity = 0f;
+```
+
+If the smoothing function causes the current value to overshoot the target (and we have seen previously that this can happen if the distance to the target is small and the current velocity is large) then setting the output to the target seems sensible. But in the case that the target moves through the current position, it would be better to leave the position unchanged, otherwise the delta time step will cause a discontinuity in the position.
+
+The full function handling these cases:
+
+```csharp
+    public static float SmoothDampMovingTarget(float current, float target, ref float currentVelocity, float previousTarget, float smoothTime, float maxSpeed, float deltaTime)
+    {
+        float output;
+        if (target == current || (previousTarget < current && current < target) || (previousTarget > current && current > target))
+        {
+            // currently on the target
+            output = current;
+            currentVelocity = 0f;
+        }
+        else
+        {
+            // apply original smoothing
+            output = Mathf.SmoothDamp(current, target, ref currentVelocity, smoothTime, maxSpeed, deltaTime);
+            if ((target > current && output > target) || (target < current && output < target))
+            {
+                // we have overshot the target
+                output = target;
+                currentVelocity = 0f;
+            }
+        }
+        return output;
+    }
+```
+
+Note that I am applying the original Unity version here, meaning that the overshoot code is effectively running twice. But you can equally substitute the original Gems version of the smoothing function.
+
+Finally it appears to work consistently and remains stable with chaning delta times.
