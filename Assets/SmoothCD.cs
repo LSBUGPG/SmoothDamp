@@ -36,7 +36,7 @@ public static class SmoothCD
         if (target == current || target > current == output > target)
         {
             output = target;
-            currentVelocity = (output - target) / deltaTime;
+            currentVelocity = (target - output) / deltaTime;
         }
         
         return output;
@@ -44,19 +44,24 @@ public static class SmoothCD
 
     public static float SmoothDampMovingTarget(float current, float target, ref float currentVelocity, float previousTarget, float smoothTime, float maxSpeed, float deltaTime)
     {
-        float output = Original(current, target, ref currentVelocity, smoothTime, maxSpeed, deltaTime);
-
-        // Prevent overshooting
-        if (target == current ||
-            (previousTarget < current && current < target) || 
-            (previousTarget > current && current > target) ||
-            (target > current && output > target) ||
-            (target < current && output < target))
+        float output;
+        if (target == current || (previousTarget < current && current < target) || (previousTarget > current && current > target))
         {
-            output = target;
-            currentVelocity = (output - target) / deltaTime;
+            // currently on the target
+            output = current;
+            currentVelocity = 0f;
         }
-        
+        else
+        {
+            // apply original smoothing
+            output = Mathf.SmoothDamp(current, target, ref currentVelocity, smoothTime, maxSpeed, deltaTime);
+            if ((target > current && output > target) || (target < current && output < target))
+            {
+                // we have overshot the target
+                output = target;
+                currentVelocity = 0f;
+            }
+        }
         return output;
     }
 }

@@ -124,7 +124,7 @@ public class Graph : MonoBehaviour
             if (i == inspectStep)
             {
                 inspectInput = inputValue;
-                inspectTarget = targetPosition;
+                inspectTarget = previousTarget;
                 inspectTime = i * deltaTime;
                 inspectDistance = targetPosition - objectPosition;
                 inspectVelocity = objectVelocity;
@@ -135,7 +135,7 @@ public class Graph : MonoBehaviour
             velocity.SetPosition(i, new Vector3(i * x, objectVelocity, 0));
             input.SetPosition(i, new Vector3(i * x, inputValue, 0));
             position.SetPosition(i, new Vector3(i * x, objectPosition, 0));
-            target.SetPosition(i, new Vector3(i * x, targetPosition, 0));
+            target.SetPosition(i, new Vector3(i * x, previousTarget, 0));
 
             switch (smoothing)
             {
@@ -145,11 +145,11 @@ public class Graph : MonoBehaviour
                 case SmoothingFunction.UnitySmoothDamp:
                     objectPosition = Mathf.SmoothDamp(objectPosition, targetPosition, ref objectVelocity, smoothTime, maxSpeed, deltaTime);
                     break;
-                case SmoothingFunction.SmoothDampMovingTarget:
-                    objectPosition = SmoothCD.SmoothDampMovingTarget(objectPosition, targetPosition, ref objectVelocity, previousTarget, smoothTime, maxSpeed, deltaTime);
-                    break;
                 case SmoothingFunction.SmoothDampZeroCheck:
                     objectPosition = SmoothCD.SmoothDampZeroCheck(objectPosition, targetPosition, ref objectVelocity, smoothTime, maxSpeed, deltaTime);
+                    break;
+                case SmoothingFunction.SmoothDampMovingTarget:
+                    objectPosition = SmoothCD.SmoothDampMovingTarget(objectPosition, targetPosition, ref objectVelocity, previousTarget, smoothTime, maxSpeed, deltaTime);
                     break;
             }
 
