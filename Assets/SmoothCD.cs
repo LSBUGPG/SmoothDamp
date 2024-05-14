@@ -1,4 +1,3 @@
-using UnityEditor;
 using UnityEngine;
 
 public static class SmoothCD
@@ -47,12 +46,13 @@ public static class SmoothCD
         float output;
         if (target == current || (previousTarget < current && current < target) || (previousTarget > current && current > target))
         {
-            // currently on the target
+            // currently on target or target is passing through
             output = current;
             currentVelocity = 0f;
         }
         else
         {
+            
             // apply original smoothing
             output = Mathf.SmoothDamp(current, target, ref currentVelocity, smoothTime, maxSpeed, deltaTime);
             if ((target > current && output > target) || (target < current && output < target))
