@@ -123,7 +123,7 @@ public class Graph : MonoBehaviour
             if (i == inspectStep)
             {
                 inspectInput = inputValue;
-                inspectTarget = previousTarget;
+                inspectTarget = targetPosition;
                 inspectTime = i * deltaTime;
                 inspectDistance = targetPosition - objectPosition;
                 inspectVelocity = objectVelocity;

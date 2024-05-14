@@ -137,7 +137,7 @@ It also has many parameters to help diagnose the issue:
 | Negative | the amount of time the input is held negative |
 | Neutral | the amount of time the input is allowed to fall to zero |
 | Input Change Velocity | how fast the input increases to maximum or falls to zero |
-| Inspect | a vertical line for inspecting the values at that point in the graph; the values are output in the `Inspector` window |
+| Inspect | a vertical line for inspecting the values at that point in the graph; the values are output in the `Inspector` window, note that the position is the current position before applying SmoothDamp, whereas the target is the point SmoothDamp will be aiming for |
 | Max Speed | the `maxSpeed` parameter passed to `SmoothDamp` |
 
 Here is an example of the original Gems code using the following setup:
