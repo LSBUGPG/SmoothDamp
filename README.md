@@ -245,7 +245,7 @@ The full function handling these cases:
         float output;
         if (target == current || (previousTarget < current && current < target) || (previousTarget > current && current > target))
         {
-            // currently on the target
+            // currently on target or target is passing through
             output = current;
             currentVelocity = 0f;
         }
